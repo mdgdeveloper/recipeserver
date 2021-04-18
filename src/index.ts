@@ -1,4 +1,5 @@
 import express from 'express';
+import { ApolloServer, gql } from 'apollo-server-express';
 import { buildSchema } from 'graphql';
 import graphqlHTTP from 'express-graphql';
 const port = 4000; // default port to listen
@@ -10,18 +11,25 @@ app.get( "/", ( req, res ) => {
     res.send( "Hello world!" );  
 } );
 
-let schemas = buildSchema(`
+// Construct a schema, jusing GraphQL schema language
+const typeDefs = gql`
   type Query {
     hello: String
   }
-`);
+`;
 
-let root = {
-    hello: () => {
-      return 'Hello world!';
-    },
-  };
+// Provide resolver functions for your schema fields
+const resolvers = {
+  Query: {
+    hello: () => 'Hello world!',
+  }
+}
 
+// Launch a new Apollo Server
+const server = new ApolloServer({ typeDefs, resolvers});
+
+
+server.applyMiddleware({ app });
 
 /* app.use('/graphql', graphqlHTTP({
     schema: schemas,
@@ -38,5 +46,5 @@ let root = {
 // start the Express server
 
 app.listen( port, () => {
-    console.log( `⚡️[server]: Server started at http://localhost:${port}` );
+    console.log( `⚡️[server]: Server started at http://localhost:${port}${server.graphqlPath}` );
 } );
