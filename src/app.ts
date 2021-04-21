@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { ApolloServer, gql } from 'apollo-server-express';
 import 'express-async-errors';
+require('dotenv').config();
 
 // Controllers import (Routes)
 import recipesRouter from './controllers/recipes';
@@ -15,8 +16,7 @@ import { typeDefs, resolvers } from './graphQL/config';
 import mongoose from 'mongoose';
 
 // Database connecton process
-const MONGODB_URI = "mongodb+srv://fullstack:mdg1984@cluster0.usexm.mongodb.net/recipeapp?retryWrites=true&w=majority";
-console.log('[⚡]: [Database] connection: ', MONGODB_URI);
+console.log('[⚡]: [Database] connection: ', process.env.MONGODB_URI);
 
 
 const app = express();
@@ -28,12 +28,12 @@ app.get( "/", ( _req, res ) => {
 
 
 // Database connection 
-mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true })
+mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true })
 .then(()=> {
   console.log('[🟢] Connected to database');
 })
 .catch(( error ) => {
-  console.log('[⭕] ERROR: Unable to connect to database ', MONGODB_URI, error.message);
+  console.log('[⭕] ERROR: Unable to connect to database ', process.env.MONGODB_URI, error.message);
 })
 
 
