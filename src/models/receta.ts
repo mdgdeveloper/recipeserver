@@ -1,7 +1,5 @@
 import mongoose from 'mongoose';
 
-
-
 const recetaSchema = new mongoose.Schema({
     recipeID: Number,
     nombre:  String,

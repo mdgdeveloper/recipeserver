@@ -1,12 +1,10 @@
 import mongoose from 'mongoose';
 
-
 const ingredienteSchema = new mongoose.Schema({
     nombre: String,
     precio: Number,
     cal: Number,
 }, { collection: 'ingredients' })
-
 
 ingredienteSchema.set('toJSON', {
     transform: (_document: any, returnedObject: any) => {
@@ -15,6 +13,5 @@ ingredienteSchema.set('toJSON', {
         delete returnedObject.__v
     }
 })
-
 
 export default mongoose.model('Ingrediente', ingredienteSchema )

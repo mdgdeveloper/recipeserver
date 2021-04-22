@@ -71,12 +71,16 @@ type Recipe{
 const resolvers = {
   Query: {
     hello: () => 'Hello world!',
-    recipes: (root: any, args: any) => {
-      const ingredientes = Ingrediente.find({});
-
-      return Receta.find({})
+    recipes: async (root: any, args: any) => {
+      const ingredientes = await Ingrediente.find({});
+      const recetas = await Receta.find({})
       .populate({ 
         path:'ingredientes.ingrediente', model: 'Ingrediente' });
+      return recetas;
+    },
+    ingredient: async (root: any, args: any) => {
+      const ingredient = await Ingrediente.findOne({id: args.ingredientID})
+      return(ingredient);
     }
 
   }
