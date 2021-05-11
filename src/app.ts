@@ -12,6 +12,7 @@ import { typeDefs, resolvers } from './graphQL/config';
 
 // Mongoose
 import mongoose from 'mongoose';
+import { graphqlUploadExpress } from 'graphql-upload';
 
 const app = express();
 
@@ -32,14 +33,18 @@ mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTop
 })
 
 
-const server = new ApolloServer({ typeDefs, resolvers});
+const server = new ApolloServer({ uploads: false, typeDefs, resolvers});
+
+
+app.use(graphqlUploadExpress({ maxFileSize: 10000000, maxFiles: 10 }));
+app.use(cors());
+app.use(express.static('build'))
+app.use(express.json())
 
 
 server.applyMiddleware({ app });
 
-app.use(cors());
-app.use(express.static('build'))
-app.use(express.json())
+
 
 
 export default app;

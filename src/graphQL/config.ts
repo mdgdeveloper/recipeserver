@@ -1,8 +1,12 @@
 import { UserInputError, AuthenticationError, gql } from 'apollo-server-express';
+import path from 'path';
+import fs from 'fs';
+import shortid from 'shortid';
 import mongoose from 'mongoose';
 import Receta from '../models/receta';
 import Ingrediente from '../models/ingrediente';
 import { coerceInputValue } from 'graphql';
+import { FileUpload, GraphQLUpload } from "graphql-upload";
 
 
 mongoose.model('Ingrediente', )
@@ -13,6 +17,7 @@ mongoose.set('useFindAndModify', false);
 // Construct a schema, jusing GraphQL schema language
 const typeDefs = gql`
 
+scalar FileUpload
 
 input IngredientInput{
   ingrediente: ID!
@@ -28,6 +33,10 @@ type Ingredient{
   cal: Float
 }
 
+type File {
+  url: String!
+}
+
 type IngredientMutation {
   nombre: String!
   precio: Float
@@ -40,7 +49,7 @@ type IngredientRecipe{
   cantidad: Int
   peso: Float
 
-}  
+}
 
 type Recipe{
   id: ID!
@@ -95,6 +104,7 @@ type Recipe{
       cal: Float
       precioUnidad: Boolean
     ): Ingredient
+    uploadFile(file: FileUpload!): File!
 }
 `;
 
@@ -172,6 +182,49 @@ const resolvers = {
        } } , {new: true});
       return recipe; 
 
+    },
+    // Upload File
+    uploadFile: async (parent: any, { file }: any) => {
+      console.log(`file`,file);
+      console.log('entra');
+      const {
+        file: { filename, mimetype, encoding, createReadStream },
+        } = await file;
+      const stream = createReadStream();
+      const id = shortid.generate();
+
+      const pathName = path.join(__dirname, `../../public/images/${id}-${filename}`);
+      const fileInfo = { id, filename, mimetype, encoding, pathName};
+
+      //await stream.pipe(fs.createWriteStream(pathName)); 
+      await new Promise((resolve, reject) => {
+        // Create a stream to which the upload will be written
+        const writeStream = fs.createWriteStream(pathName);
+
+        // When the upload is full written, resolve the promise
+        writeStream.on('finish', resolve);
+
+        // If there's an error writing the file, remove the partially written filename
+        // and reject the Promise
+        writeStream.on('error', (error) => {
+          fs.unlink(pathName, () => {
+            reject(error);
+          });
+        });
+     
+        // Node.js <= v13
+        stream.on('error', (error: any) => writeStream.destroy(error));
+
+        // Pipe the upload inte the write stream.
+        stream.pipe(writeStream);
+     
+      })
+
+
+      return {
+        // In production it should be changed 
+        url: `http://localhost:4000/images/${filename}`,
+       }
     }
 
   }
