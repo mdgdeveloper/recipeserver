@@ -35,10 +35,10 @@ mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTop
 
 const server = new ApolloServer({ uploads: false, typeDefs, resolvers});
 
-
-app.use(graphqlUploadExpress({ maxFileSize: 10000000, maxFiles: 10 }));
+// Use Public folder as accessible through express server 
 app.use(cors());
-app.use(express.static('build'))
+app.use(express.static('public'));
+app.use(graphqlUploadExpress({ maxFileSize: 10000000, maxFiles: 10 }));
 app.use(express.json())
 
 

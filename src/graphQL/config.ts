@@ -22,7 +22,7 @@ scalar FileUpload
 input IngredientInput{
   ingrediente: ID!
   cantidad: Int!
-  peso: Float!
+  peso: Boolean!
 }
 
 type Ingredient{
@@ -35,6 +35,7 @@ type Ingredient{
 
 type File {
   url: String!
+  filename: String!
 }
 
 type IngredientMutation {
@@ -74,12 +75,13 @@ type Recipe{
   type Mutation {
     addRecipe(
       nombre: String!
-      ingredientes: [IngredientInput!]!
-      pasos: [String]!
       tiempo: Int!
       personas: Int!
       tipo: String!
+      pasos: [String]!
       imagen: String
+      ingredientes: [IngredientInput!]!
+     
     ): Recipe
     addIngredient(
       nombre: String!
@@ -152,13 +154,15 @@ const resolvers = {
     addRecipe: async ( _root: any, args: any) => {
       const recipe = new Receta(args);
       try {
-        await recipe.save();
-        return recipe;
+        const repiceSaved = await recipe.save();
+        return repiceSaved;
       } catch (error) {
         throw new UserInputError( error.message, {
           invalidArgs: args,
         })
-      }
+        }
+
+      
     },
     // Edit ingredient
     editIngredient: async (_root: any, args: any) =>  {
@@ -184,26 +188,25 @@ const resolvers = {
 
     },
     // Upload File
-    uploadFile: async (parent: any, { file }: any) => {
-      console.log(`file`,file);
-      console.log('entra');
+    uploadFile: async (_parent: any, { file } : any) => {
+
       const {
         file: { filename, mimetype, encoding, createReadStream },
         } = await file;
       const stream = createReadStream();
       const id = shortid.generate();
-
+    
       const pathName = path.join(__dirname, `../../public/images/${id}-${filename}`);
       const fileInfo = { id, filename, mimetype, encoding, pathName};
-
+    
       //await stream.pipe(fs.createWriteStream(pathName)); 
-      await new Promise((resolve, reject) => {
+    await new Promise((resolve, reject) => {
         // Create a stream to which the upload will be written
         const writeStream = fs.createWriteStream(pathName);
-
+    
         // When the upload is full written, resolve the promise
         writeStream.on('finish', resolve);
-
+    
         // If there's an error writing the file, remove the partially written filename
         // and reject the Promise
         writeStream.on('error', (error) => {
@@ -214,23 +217,19 @@ const resolvers = {
      
         // Node.js <= v13
         stream.on('error', (error: any) => writeStream.destroy(error));
-
+    
         // Pipe the upload inte the write stream.
         stream.pipe(writeStream);
-     
-      })
-
-
-      return {
+      });
+    
+ return {
         // In production it should be changed 
-        url: `http://localhost:4000/images/${filename}`,
-       }
+        url: `http://localhost:4000/images/${id}-${filename}`,
+        filename: `${id}-${filename}`,
+       } 
     }
 
   }
 }
   
-
-
-
   export { resolvers, typeDefs };
