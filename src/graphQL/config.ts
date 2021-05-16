@@ -85,7 +85,7 @@ type Recipe{
     ): Recipe
     addIngredient(
       nombre: String!
-      precioUnidad: Boolean!
+      precioUnidad: Boolean
       precio: Float
       cal: Float
     ): Ingredient
@@ -139,6 +139,7 @@ const resolvers = {
   Mutation: {
     // Add Ingredient 
     addIngredient: async (_root: any, args: any) => { 
+
       const ingredient = new Ingrediente(args);
       try{
         await ingredient.save();
